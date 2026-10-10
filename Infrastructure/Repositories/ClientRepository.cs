@@ -27,6 +27,16 @@ namespace hackatonxp.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<IEnumerable<Client>> GetByAdvisorIdAsync(
+            Guid advisorId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _db.Clients
+                .AsNoTracking()
+                .Where(c => c.AdvisorId == advisorId)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<Client?> GetByIdAsync(
             Guid id,
             CancellationToken cancellationToken = default)

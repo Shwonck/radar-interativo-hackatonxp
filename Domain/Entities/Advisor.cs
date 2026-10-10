@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace hackatonxp.Domain.Entities
 {
@@ -10,5 +11,7 @@ namespace hackatonxp.Domain.Entities
         public string PasswordHash { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
+
+        public ICollection<Client> Clients { get; set; } = new List<Client>();
     }
 }

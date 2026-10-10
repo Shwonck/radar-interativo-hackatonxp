@@ -62,6 +62,9 @@ namespace hackatonxp.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AdvisorId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -92,7 +95,12 @@ namespace hackatonxp.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
+                    b.Property<string>("PluggyItemId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AdvisorId");
 
                     b.HasIndex("Cpf")
                         .IsUnique();
@@ -225,6 +233,16 @@ namespace hackatonxp.Migrations
                     b.ToTable("Tasks");
                 });
 
+            modelBuilder.Entity("hackatonxp.Domain.Entities.Client", b =>
+                {
+                    b.HasOne("hackatonxp.Domain.Entities.Advisor", "Advisor")
+                        .WithMany("Clients")
+                        .HasForeignKey("AdvisorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Advisor");
+                });
+
             modelBuilder.Entity("hackatonxp.Domain.Entities.ImportantDate", b =>
                 {
                     b.HasOne("hackatonxp.Domain.Entities.Client", "Client")
@@ -267,6 +285,11 @@ namespace hackatonxp.Migrations
                         .IsRequired();
 
                     b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("hackatonxp.Domain.Entities.Advisor", b =>
+                {
+                    b.Navigation("Clients");
                 });
 
             modelBuilder.Entity("hackatonxp.Domain.Entities.Client", b =>

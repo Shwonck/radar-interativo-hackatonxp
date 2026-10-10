@@ -11,6 +11,10 @@ namespace hackatonxp.Application.Interfaces
         Task<IEnumerable<Client>> GetAllAsync(
             CancellationToken cancellationToken = default);
 
+        Task<IEnumerable<Client>> GetByAdvisorIdAsync(
+            Guid advisorId,
+            CancellationToken cancellationToken = default);
+
         Task<Client?> GetByIdAsync(
             Guid id,
             CancellationToken cancellationToken = default);

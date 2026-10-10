@@ -23,6 +23,10 @@ namespace hackatonxp.Domain.Entities
         public string? CommunicationPreferences { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        public Guid? AdvisorId { get; set; }
+        public Advisor? Advisor { get; set; }
+        public string? PluggyItemId { get; set; }
+
         public ICollection<PortfolioPosition> Positions { get; set; } = new List<PortfolioPosition>();
         public ICollection<Interaction> Interactions { get; set; } = new List<Interaction>();
         public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();

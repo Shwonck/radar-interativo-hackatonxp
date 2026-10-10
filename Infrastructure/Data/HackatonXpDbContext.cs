@@ -30,6 +30,11 @@ namespace hackatonxp.Infrastructure.Data
                 b.HasMany(x => x.Interactions).WithOne(i => i.Client).HasForeignKey(i => i.ClientId);
                 b.HasMany(x => x.Tasks).WithOne(t => t.Client).HasForeignKey(t => t.ClientId);
                 b.HasMany(x => x.ImportantDates).WithOne(d => d.Client).HasForeignKey(d => d.ClientId);
+                b.Property(x => x.PluggyItemId);
+                b.HasOne(x => x.Advisor)
+                    .WithMany(a => a.Clients)
+                    .HasForeignKey(x => x.AdvisorId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<Advisor>(b =>

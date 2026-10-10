@@ -9,3 +9,11 @@ docker-compose.override.yml
 *.suo
 coverage/
 TestResults/
+
+# Agent workflow artifacts (internal — not part of the project)
+.agents/
+.worktrees/
+
+# Scratch / test request-response files
+client-payload.json
+create-response.txt
