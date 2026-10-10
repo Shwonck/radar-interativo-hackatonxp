@@ -119,6 +119,132 @@ namespace hackatonxp.Infrastructure.Services
             return result?.Results ?? new List<InvestmentResponse>();
         }
 
+        public async Task<List<AccountResponse>> GetClientAccountsAsync(
+            string itemId,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentException(
+                    "O itemId é obrigatório.",
+                    nameof(itemId));
+            }
+
+            var apiKey = await GetApiKeyAsync(cancellationToken);
+
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"accounts?itemId={Uri.EscapeDataString(itemId)}");
+
+            request.Headers.Add("X-API-KEY", apiKey);
+
+            using var response = await _httpClient.SendAsync(
+                request,
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+
+            var result =
+                await response.Content.ReadFromJsonAsync<PluggyAccountsResponse>(
+                    cancellationToken: cancellationToken);
+
+            return result?.Results ?? new List<AccountResponse>();
+        }
+
+        public async Task<List<LoanResponse>> GetClientLoansAsync(
+            string itemId,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentException(
+                    "O itemId é obrigatório.",
+                    nameof(itemId));
+            }
+
+            var apiKey = await GetApiKeyAsync(cancellationToken);
+
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"loans?itemId={Uri.EscapeDataString(itemId)}");
+
+            request.Headers.Add("X-API-KEY", apiKey);
+
+            using var response = await _httpClient.SendAsync(
+                request,
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+
+            var result =
+                await response.Content.ReadFromJsonAsync<PluggyLoansResponse>(
+                    cancellationToken: cancellationToken);
+
+            return result?.Results ?? new List<LoanResponse>();
+        }
+
+        public async Task<ItemResponse?> GetItemAsync(
+            string itemId,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(itemId))
+            {
+                throw new ArgumentException(
+                    "O itemId é obrigatório.",
+                    nameof(itemId));
+            }
+
+            var apiKey = await GetApiKeyAsync(cancellationToken);
+
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"items/{Uri.EscapeDataString(itemId)}");
+
+            request.Headers.Add("X-API-KEY", apiKey);
+
+            using var response = await _httpClient.SendAsync(
+                request,
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<ItemResponse>(
+                cancellationToken: cancellationToken);
+        }
+
+        public async Task<ConnectTokenResponse?> CreateConnectTokenAsync(
+            string? itemId,
+            string? clientUserId,
+            CancellationToken cancellationToken = default)
+        {
+            var apiKey = await GetApiKeyAsync(cancellationToken);
+
+            using var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "connect_token");
+
+            request.Headers.Add("X-API-KEY", apiKey);
+
+            object? options = string.IsNullOrWhiteSpace(clientUserId)
+                ? null
+                : new { clientUserId };
+
+            request.Content = JsonContent.Create(new
+            {
+                itemId = string.IsNullOrWhiteSpace(itemId) ? null : itemId,
+                options
+            });
+
+            using var response = await _httpClient.SendAsync(
+                request,
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<ConnectTokenResponse>(
+                cancellationToken: cancellationToken);
+        }
+
         private sealed class PluggyAuthResponse
         {
             [JsonPropertyName("apiKey")]
@@ -129,6 +255,18 @@ namespace hackatonxp.Infrastructure.Services
         {
             [JsonPropertyName("results")]
             public List<InvestmentResponse> Results { get; set; } = new();
+        }
+
+        private sealed class PluggyAccountsResponse
+        {
+            [JsonPropertyName("results")]
+            public List<AccountResponse> Results { get; set; } = new();
+        }
+
+        private sealed class PluggyLoansResponse
+        {
+            [JsonPropertyName("results")]
+            public List<LoanResponse> Results { get; set; } = new();
         }
     }
 }

@@ -14,13 +14,19 @@ namespace hackatonxp.Api.Controllers
     {
         private readonly IClientService _clientService;
         private readonly IClientOverviewService _overviewService;
+        private readonly IClientRepository _clientRepository;
+        private readonly IPluggyService _pluggyService;
 
         public ClientsController(
             IClientService clientService,
-            IClientOverviewService overviewService)
+            IClientOverviewService overviewService,
+            IClientRepository clientRepository,
+            IPluggyService pluggyService)
         {
             _clientService = clientService;
             _overviewService = overviewService;
+            _clientRepository = clientRepository;
+            _pluggyService = pluggyService;
         }
 
         [HttpGet]
@@ -124,6 +130,63 @@ namespace hackatonxp.Api.Controllers
                 id, cancellationToken);
 
             return overview is null ? NotFound() : Ok(overview);
+        }
+
+        [HttpGet("{id:guid}/open-finance")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status502BadGateway)]
+        public async Task<IActionResult> GetOpenFinance(
+            Guid id,
+            CancellationToken cancellationToken)
+        {
+            var client = await _clientRepository.GetByIdAsync(
+                id, cancellationToken);
+
+            if (client is null)
+            {
+                return NotFound();
+            }
+
+            if (string.IsNullOrWhiteSpace(client.PluggyItemId))
+            {
+                return Conflict(new
+                {
+                    message = "O cliente não possui conexão Open Finance (PluggyItemId)."
+                });
+            }
+
+            var itemId = client.PluggyItemId;
+
+            try
+            {
+                var investments = await _pluggyService.GetClientInvestmentsAsync(
+                    itemId, cancellationToken);
+                var accounts = await _pluggyService.GetClientAccountsAsync(
+                    itemId, cancellationToken);
+                var loans = await _pluggyService.GetClientLoansAsync(
+                    itemId, cancellationToken);
+                var item = await _pluggyService.GetItemAsync(
+                    itemId, cancellationToken);
+
+                return Ok(new
+                {
+                    investments,
+                    accounts,
+                    loans,
+                    item
+                });
+            }
+            catch (HttpRequestException)
+            {
+                return StatusCode(
+                    StatusCodes.Status502BadGateway,
+                    new
+                    {
+                        message = "Não foi possível consultar os dados Open Finance na Pluggy."
+                    });
+            }
         }
     }
 }
