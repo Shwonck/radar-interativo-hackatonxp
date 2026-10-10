@@ -11,7 +11,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Controllers e Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.ParameterLocation.Header,
+        Description = "Cole apenas o token JWT (sem o prefixo 'Bearer ')."
+    });
+
+    options.AddSecurityRequirement(_ => new Microsoft.OpenApi.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", null),
+            new List<string>()
+        }
+    });
+});
 
 // Configuração do banco de dados
 var postgres = builder.Configuration.GetConnectionString("Postgres");
@@ -59,6 +78,10 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     hackatonxp.Application.Interfaces.ICpfService,
     hackatonxp.Application.Services.CpfService>();
+
+builder.Services.AddScoped<
+    hackatonxp.Application.Interfaces.IPortfolioSummaryService,
+    hackatonxp.Application.Services.PortfolioSummaryService>();
 
 // Integração com a Pluggy
 builder.Services.AddHttpClient<IPluggyService, PluggyService>(client =>
